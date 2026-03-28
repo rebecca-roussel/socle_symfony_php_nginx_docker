@@ -6,7 +6,7 @@ Socle de configuration reproductible pour démarrer des projets Symfony avec **P
 
 ## Objectif
 
-Ce dépôt a pour but de fournir une base technique claire, cohérente et directement exploitable pour initialiser un projet Symfony dans un environnement conteneurisé.
+Ce dépôt a pour but de fournir une base technique exploitable pour démarrer un projet Symfony dans un environnement conteneurisé.
 
 Il sert à démarrer avec :
 
@@ -177,6 +177,17 @@ composer install
 
 > Cette étape permet de récupérer le socle technique du projet et d’installer les dépendances PHP définies dans `composer.json`.
 
+### Pourquoi lancer `composer install` localement ?
+
+Dans cette architecture, la commande `composer install` est exécutée sur la machine hôte, c’est-à-dire dans Ubuntu sous WSL 2.
+
+Le dossier `vendor/` est donc généré sur l’hôte, puis partagé avec le conteneur PHP via le montage de fichiers défini dans `compose.yaml`.
+
+> Cette organisation présente deux avantages :
+>
+> - l’éditeur de code local peut lire directement le dossier `vendor/` pour l’autocomplétion et l’analyse du code ;
+> - le conteneur PHP continue d’exécuter l’application avec ces mêmes dépendances, car il voit les fichiers partagés depuis l’hôte.
+
 ---
 
 ## Comment le socle a été initialisé ?
@@ -190,7 +201,7 @@ Deux approches sont possibles :
 - utiliser la **CLI Symfony**
 - utiliser **Composer**
 
-> Dans le cadre de ce socle, la CLI Symfony est utilisée pour créer le premier squelette du projet.
+> Dans le cadre de ce socle, la CLI Symfony a été utilisée pour créer le premier squelette du projet.
 
 ### 1. Vérifier les prérequis du poste
 
@@ -253,25 +264,18 @@ Il contient le fichier `index.php`, qui sert de front controller.
 
 ## Définition des dossiers et fichiers de configuration
 
-Après la création du squelette Symfony, ce dépôt complète la base initiale avec les dossiers et fichiers nécessaires à un environnement de travail conteneurisé.  
-L’objectif est de disposer d’un socle technique immédiatement réutilisable, dans lequel la structure applicative, l’exécution PHP et le serveur web sont déjà organisés.
+Pour lire correctement ce socle, il est utile de distinguer deux niveaux :
 
-### Dossiers principaux
+- **l’applicatif**, c’est-à-dire le projet Symfony lui-même
+- **l’infrastructure**, c’est-à-dire les éléments qui permettent d’exécuter ce projet dans un environnement conteneurisé
+
+### Ce qui relève de l’applicatif
 
 `bin/`  
 Contient les exécutables du projet Symfony, notamment `console`, qui permet d’utiliser les commandes du framework en ligne de commande.
 
 `config/`  
 Regroupe les fichiers de configuration internes de Symfony. Ce dossier contient les réglages du framework, des services, des routes et des différents environnements.
-
-`docker/`  
-Centralise les éléments liés à la conteneurisation du projet. Ce dossier permet de séparer clairement la configuration technique des services du code applicatif.
-
-`docker/nginx/`  
-Contient la configuration du serveur Nginx. Ce dossier héberge notamment le fichier qui définit le répertoire servi par le serveur web et la transmission des requêtes PHP vers PHP-FPM.
-
-`docker/php/`  
-Contient les éléments nécessaires à la construction du conteneur PHP, en particulier le fichier `Dockerfile` utilisé pour préparer l’environnement d’exécution de l’application.
 
 `public/`  
 Correspond au répertoire exposé par le serveur web. Il contient le point d’entrée de l’application Symfony, situé dans `public/index.php`, ainsi que les ressources publiques du projet.
@@ -288,7 +292,25 @@ Contient les fichiers temporaires générés par Symfony, comme le cache et cert
 `vendor/`  
 Contient les dépendances PHP installées par Composer. Ce dossier est généré lors de l’exécution de `composer install`.
 
-### Fichiers de configuration principaux
+`composer.json`  
+Décrit le projet PHP et ses dépendances. Ce fichier définit également certaines commandes et réglages utilisés par Composer.
+
+`composer.lock`  
+Fige les versions exactes des dépendances installées. Il garantit une installation cohérente d’un environnement à l’autre.
+
+`.env`  
+Contient les variables d’environnement de base utilisées par Symfony. Ce fichier sert de référence commune pour le fonctionnement général du projet.
+
+### Ce qui relève de l’infrastructure
+
+`docker/`  
+Centralise les éléments liés à la conteneurisation du projet. Ce dossier permet de séparer clairement la configuration technique des services du code applicatif.
+
+`docker/php/`  
+Contient les éléments nécessaires à la construction du conteneur PHP, en particulier le fichier `Dockerfile` utilisé pour préparer l’environnement d’exécution de l’application.
+
+`docker/nginx/`  
+Contient la configuration du serveur Nginx. Ce dossier héberge notamment le fichier qui définit le répertoire servi par le serveur web et la transmission des requêtes PHP vers PHP-FPM.
 
 `docker/php/Dockerfile`  
 Définit l’image PHP du projet. Ce fichier permet de préparer un environnement cohérent pour exécuter Symfony dans un conteneur, avec les extensions et outils nécessaires.
@@ -299,25 +321,20 @@ Contient la configuration du serveur Nginx. Ce fichier précise notamment le ré
 `compose.yaml`  
 Décrit les services du projet, leur orchestration, leurs volumes, leurs ports et leurs relations. Ce fichier permet de démarrer l’environnement local complet avec une seule commande.
 
-`.env`  
-Contient les variables d’environnement de base utilisées par Symfony. Ce fichier sert de référence commune pour le fonctionnement général du projet.
-
 `.env.docker`  
-Permet de regrouper les variables adaptées à l’environnement conteneurisé. Il facilite l’utilisation du projet dans Docker sans modifier directement la configuration de base.
+Fichier spécifique à ce socle pour centraliser des variables destinées à l’environnement conteneurisé.  
+Ce fichier n’est pas chargé nativement par Symfony uniquement parce qu’il existe.  
+Il doit être relié explicitement à Docker Compose s’il est utilisé, par exemple via la directive `env_file` dans `compose.yaml`.
 
 `.env.prod`  
 Permet de prévoir une configuration spécifique à un environnement de production. Il sert à isoler les paramètres destinés à un déploiement réel.
 
-`composer.json`  
-Décrit le projet PHP et ses dépendances. Ce fichier définit également certaines commandes et réglages utilisés par Composer.
-
-`composer.lock`  
-Fige les versions exactes des dépendances installées. Il garantit une installation cohérente d’un environnement à l’autre.
+### Document de référence
 
 `README.md`  
 Documente le rôle du dépôt, sa structure, les prérequis et les étapes de mise en place. Il sert de point d’entrée pour comprendre rapidement le fonctionnement du socle.
 
-### Rôle de cette structure
+### Rôle de l’ensemble
 
 Cette organisation permet de partir d’une base claire, stable et réutilisable.  
 Le squelette Symfony fournit l’ossature de l’application, tandis que le présent dépôt ajoute les éléments techniques déjà préparés pour retrouver rapidement un environnement proche du moule utilisé sur EcoRide.
@@ -325,13 +342,128 @@ Le squelette Symfony fournit l’ossature de l’application, tandis que le pré
 Une fois le dépôt cloné, la structure principale est déjà en place.  
 Il reste ensuite à adapter les éléments propres au futur projet, comme les variables métier, les connexions aux bases de données et le code applicatif spécifique.
 
+> En résumé :
+>
+> - **Symfony** gère l’application ;
+> - **Docker** et **Nginx** gèrent son exécution dans un environnement conteneurisé.
+
+---
+
+## Configurer les variables d’environnement
+
+Avant de démarrer l’environnement, il faut vérifier quels fichiers de variables sont utilisés par le socle.
+
+### 1. Vérifier les fichiers présents à la racine du dépôt
+
+À exécuter dans le terminal Ubuntu (WSL 2) :
+
+```bash
+ls -la
+```
+
+> Vérifier notamment la présence des fichiers suivants :
+>
+> `.env`
+> `.env.docker`
+> `.env.prod`
+> `compose.yaml`
+
+### 2. Comprendre le rôle des fichiers
+
+- `.env` : fichier de base utilisé par Symfony pour définir les variables d’environnement du projet.
+- `.env.docker` : fichier spécifique au socle, destiné à centraliser des variables pour l’environnement conteneurisé.
+- `.env.prod` : fichier prévu pour un contexte de production.
+
+> Symfony ne charge pas automatiquement un fichier arbitraire comme `.env.docker` uniquement parce qu’il existe.
+> Si ce fichier est réellement utilisé par le socle, sa prise en compte doit être vérifiée dans `compose.yaml`, par exemple via la directive `env_file`.
+
+### 3. Vérifier comment Docker Compose charge les variables
+
+Ouvrir `compose.yaml` et repérer si le fichier `.env.docker` est référencé.
+
+Exemple possible :
+
+```yaml
+services:
+  php:
+    env_file:
+      - .env.docker
+```
+
+> Si `env_file` est présent, les variables définies dans `.env.docker` seront injectées dans l’environnement du conteneur concerné.
+> Si ce n’est pas le cas, `.env.docker` existe comme fichier du socle mais n’est pas encore utilisé par Docker Compose.
+
+### 4. Adapter les variables au projet cible
+
+Avant de lancer un nouveau projet à partir de ce socle, il faut relire et adapter les variables utiles, par exemple :
+
+- le nom du projet
+- le port exposé localement
+- les paramètres de base de données
+- les variables liées à l’environnement Symfony
+- les variables spécifiques aux futurs services ajoutés au socle
+
+---
+
+## Démarrer l’environnement
+
+Une fois le dépôt cloné, les dépendances PHP installées et les variables d’environnement vérifiées, l’environnement conteneurisé peut être démarré.
+
+À exécuter dans le terminal Ubuntu (WSL 2) :
+
+```bash
+docker compose up --build -d
+```
+
+> Cette commande construit les images si nécessaire, crée ou recrée les conteneurs, puis démarre les services en arrière-plan.
+
+---
+
+## Vérifier que l’application répond
+
+Après le démarrage des services, il faut contrôler que l’environnement fonctionne correctement.
+
+### 1. Vérifier que les conteneurs sont bien actifs
+
+```bash
+docker compose ps
+```
+
+> Vérifier que les services attendus sont indiqués comme démarrés.
+
+### 2. Vérifier que les ports sont bien exposés
+
+Toujours avec :
+
+```bash
+docker compose ps
+```
+
+> Repérer le port exposé par le service Nginx, puis l’utiliser dans l’URL locale à ouvrir dans le navigateur.
+
+### 3. Tester l’accès à l’application
+
+Ouvrir le navigateur et accéder à l’URL correspondant au port exposé par Nginx, par exemple :
+
+[http://localhost:8080](http://localhost:8080)
+
+> L’URL exacte dépend du port déclaré dans `compose.yaml`.
+
 ---
 
 ## Débogage
 
 Cette section regroupe les vérifications de base à effectuer lorsque l’environnement ne démarre pas correctement ou lorsqu’un service ne répond pas comme prévu.
 
-### 1. Vérifier l’état des services
+### 1. Vérifier que Symfony sert bien le point d’entrée prévu
+
+Le serveur web doit servir le répertoire `public/`, dont le point d’entrée est le fichier :
+
+`public/index.php`
+
+Si Nginx pointe vers un autre répertoire, l’application ne répondra pas correctement.
+
+### 2. Vérifier l’état des services
 
 Démarrer ou reconstruire l’environnement :
 
@@ -352,12 +484,12 @@ docker compose ps
 ```
 
 > Cette commande d'affichage permet de vérifier rapidement :
+>
+> - si les conteneurs sont démarrés
+> - si un service s’est arrêté immédiatement
+> - quels ports sont exposés
 
-- si les conteneurs sont démarrés
-- si un service s’est arrêté immédiatement
-- quels ports sont exposés
-
-### 2. Lire les logs
+### 3. Lire les logs
 
 Afficher les logs de l’ensemble des services :
 
@@ -379,13 +511,13 @@ docker compose logs php
 ```
 
 > Les logs permettent d’identifier :
+>
+> - une erreur de configuration Nginx
+> - un problème de démarrage du service PHP
+> - une erreur de chemin ou de montage de volume
+> - un problème lié au port exposé
 
-- une erreur de configuration Nginx
-- un problème de démarrage du service PHP
-- une erreur de chemin ou de montage de volume
-- un problème lié au port exposé
-
-### 3. Entrer dans un conteneur
+### 4. Entrer dans un conteneur
 
 Ouvrir un terminal dans le service PHP :
 
@@ -405,7 +537,7 @@ docker compose exec nginx sh
 >- vérifier les chemins réellement utilisés
 >- exécuter des commandes de contrôle directement dans le service concerné
 
-### 4. Vérifier les points de contrôle essentiels
+### 5. Vérifier les points de contrôle essentiels
 
 En cas de dysfonctionnement, vérifier en priorité que :
 
@@ -417,7 +549,7 @@ En cas de dysfonctionnement, vérifier en priorité que :
 - le port local choisi n’est pas déjà utilisé par un autre service
 - le chemin du point d’entrée web est cohérent avec l’arborescence du projet
 
-### 5. Rebuild propre de l’environnement
+### 6. Rebuild propre de l’environnement
 
 Si une modification de configuration n’est pas prise en compte, il peut être utile d’arrêter puis de relancer proprement l’environnement :
 
@@ -428,7 +560,7 @@ docker compose up --build
 
 > Cette relance permet de repartir d’un état assaini après une modification du `Dockerfile`, du `compose.yaml` ou des fichiers de configuration liés aux services.
 
-### 6. Vérifications minimales utiles
+### 7. Vérifications minimales utiles
 
 Vérifier que Docker répond correctement :
 
@@ -443,7 +575,7 @@ Vérifier l’environnement WSL si nécessaire :
 wsl
 ```
 
-### 7. Erreurs fréquentes à contrôler
+### 8. Erreurs fréquentes à contrôler
 
 Erreurs fréquentes à vérifier en priorité :
 
@@ -466,7 +598,7 @@ Cette version s’appuie sur les commandes Compose officielles :
 
 ## Auteur
 
-## Rebecca Roussel
+**Rebecca Roussel**
 
 ## Sources officielles
 
