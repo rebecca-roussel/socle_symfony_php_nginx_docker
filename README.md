@@ -238,23 +238,86 @@ composer require webapp
 La structure exacte peut varier selon les paquets installés, mais la structure par défaut d’un projet Symfony comprend notamment les éléments suivants :
 
 ```text
-nom_du_projet/
-├── assets/
-├── bin/
-│   └── console
-├── config/
-├── public/
-│   └── index.php
-├── src/
-├── templates/
-├── tests/
-├── translations/
-├── var/
-├── vendor/
-├── .env
+.
+├── assets
+│   ├── app.js
+│   ├── controllers
+│   │   ├── csrf_protection_controller.js
+│   │   └── hello_controller.js
+│   ├── controllers.json
+│   ├── stimulus_bootstrap.js
+│   └── styles
+│       └── app.css
+├── bin
+│   ├── console
+│   └── phpunit
 ├── composer.json
 ├── composer.lock
-└── symfony.lock
+├── compose.yml
+├── config
+│   ├── bundles.php
+│   ├── packages
+│   │   ├── asset_mapper.yaml
+│   │   ├── cache.yaml
+│   │   ├── csrf.yaml
+│   │   ├── debug.yaml
+│   │   ├── doctrine_migrations.yaml
+│   │   ├── doctrine.yaml
+│   │   ├── framework.yaml
+│   │   ├── mailer.yaml
+│   │   ├── messenger.yaml
+│   │   ├── monolog.yaml
+│   │   ├── notifier.yaml
+│   │   ├── property_info.yaml
+│   │   ├── routing.yaml
+│   │   ├── security.yaml
+│   │   ├── translation.yaml
+│   │   ├── twig.yaml
+│   │   ├── ux_turbo.yaml
+│   │   ├── validator.yaml
+│   │   └── web_profiler.yaml
+│   ├── preload.php
+│   ├── reference.php
+│   ├── routes
+│   │   ├── framework.yaml
+│   │   ├── security.yaml
+│   │   └── web_profiler.yaml
+│   ├── routes.yaml
+│   └── services.yaml
+├── docker
+│   ├── nginx
+│   │   └── default.conf
+│   └── php
+│       └── Dockerfile
+├── .dockerignore
+├── .editorconfig
+├── .env
+├── .env.dev
+├── .env.test
+├── .gitignore
+├── importmap.php
+├── migrations
+│   └── .gitignore
+├── phpdoc.dist.xml
+├── phpunit.dist.xml
+├── public
+│   └── index.php
+├── README.md
+├── src
+│   ├── Controller
+│   │   └── .gitignore
+│   ├── Entity
+│   │   └── .gitignore
+│   ├── Kernel.php
+│   └── Repository
+│       └── .gitignore
+├── symfony.lock
+├── templates
+│   └── base.html.twig
+├── tests
+│   └── bootstrap.php
+└── translations
+    └── .gitignore
 ```
 
 Le répertoire `public/` correspond au point d’entrée web de l’application.

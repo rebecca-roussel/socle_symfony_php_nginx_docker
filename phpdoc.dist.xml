@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor
+    configVersion="3"
+    xmlns="https://www.phpdoc.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+    <title>socle_symfony_php_nginx_docker</title>
+
+    <paths>
+        <output>docs/api</output>
+    </paths>
+
+    <version number="1.0.0">
+        <api>
+            <source dsn=".">
+                <path>src</path>
+                <path>config</path>
+            </source>
+        </api>
+    </version>
+</phpdocumentor>
