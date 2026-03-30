@@ -575,7 +575,54 @@ Vérifier l’environnement WSL si nécessaire :
 wsl
 ```
 
-### 8. Erreurs fréquentes à contrôler
+### 8. PDO et bases de données relationnelles
+
+Lors de la vérification de l’environnement avec `symfony check:requirements`, un avertissement peut apparaître si aucun pilote PDO n’est installé.
+
+Cet avertissement est normal dans le cadre de ce socle, car il ne présuppose pas de base de données relationnelle par défaut. Le pilote PDO à installer dépend du moteur de base de données choisi pour le projet.
+
+> - **PDO** fournit une interface commune d’accès aux bases de données relationnelles.
+> - Un **pilote PDO** est nécessaire pour se connecter à un moteur précis.
+> - Sans pilote PDO, Symfony peut démarrer, mais une couche d’accès aux données comme Doctrine ne pourra pas communiquer avec une base relationnelle.
+
+#### Exemples de pilotes possibles sous Ubuntu
+
+Adapter la version du paquet PHP à la version réellement installée sur la machine.
+
+##### PostgreSQL
+
+```bash
+sudo apt install -y php8.4-pgsql
+```
+
+##### MySQL / MariaDB
+
+```bash
+sudo apt install -y php8.4-mysql
+```
+
+##### SQLite
+
+```bash
+sudo apt install -y php8.4-sqlite3
+```
+
+> Le choix du SGBD dépend des besoins du projet. Ce socle n’impose aucun moteur relationnel par défaut.
+
+#### Contraintes possibles à prendre en compte avec ce socle
+
+Le choix du **SGBD** doit rester cohérent avec l’ensemble de la stack technique. Il faut notamment vérifier :
+
+- la disponibilité du pilote PDO correspondant
+- la compatibilité avec Doctrine si le projet utilise un accès aux données via Doctrine DBAL ou ORM
+- la cohérence de la variable de connexion, par exemple `DATABASE_URL`
+- la présence éventuelle d’un service de base de données dans `compose.yaml` si la base doit être conteneurisée
+- les différences de fonctionnement entre moteurs, notamment sur les types SQL, les contraintes, les index ou certaines requêtes spécifiques.
+- Vérification après installation
+
+Après l’installation du pilote adapté, relancer la commande `symfony check:requirements` dans le terminal Ubuntu.
+
+### 9. Erreurs fréquentes à contrôler
 
 Erreurs fréquentes à vérifier en priorité :
 
