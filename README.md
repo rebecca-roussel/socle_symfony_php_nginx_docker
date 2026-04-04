@@ -66,8 +66,13 @@ Avant d'utiliser ce dépôt, les éléments suivants doivent être installés :
 - extensions PHP minimales requises : **Ctype**, **iconv**, **PCRE**, **Session**, **SimpleXML** et **Tokenizer**
 - **Composer**
 - **Git**
-- **Symfony CLI**
 - **curl**
+
+### Dépendance recommandée
+
+- **Symfony CLI** : recommandée pour vérifier les prérequis avec `symfony check:requirements` et pour initialiser un nouveau projet Symfony. Elle n'est pas indispensable si le projet est créé via Composer uniquement.
+
+> La Symfony CLI n'est pas nécessaire pour cloner ce dépôt, installer les dépendances ou démarrer l'environnement Docker.
 
 ---
 
@@ -158,9 +163,14 @@ symfony -v
 git --version
 php -v
 composer --version
-symfony -v
 docker version
 docker compose version
+```
+
+Si la Symfony CLI est installée, vérifier également les prérequis Symfony :
+
+```bash
+symfony -v
 symfony check:requirements
 ```
 
@@ -378,7 +388,6 @@ La structure exacte peut varier selon les paquets installés, mais la structure 
 ├── .dockerignore
 ├── .editorconfig
 ├── .env
-├── .env.dev
 ├── .env.test
 ├── .gitignore
 ├── importmap.php
@@ -451,10 +460,10 @@ Décrit le projet PHP et ses dépendances. Ce fichier définit également certai
 Fige les versions exactes des dépendances installées. Il garantit une installation cohérente d'un environnement à l'autre.
 
 `.env`  
-Contient les variables d'environnement de base utilisées par Symfony. Ce fichier sert de référence commune pour le fonctionnement général du projet.
+Contient les variables d'environnement de base utilisées par Symfony. Ce fichier sert de référence commune pour le fonctionnement général du projet. Il est commité et ne doit jamais contenir de secrets réels.
 
-`.env.dev`  
-Contient les surcharges de variables d'environnement spécifiques à l'environnement de développement. Ce fichier est commité et complète `.env` pour l'environnement `dev`.
+`.env.dev.local`  
+Fichier non commité, destiné aux surcharges locales spécifiques à l'environnement de développement. Il n'est pas fourni dans ce dépôt et doit être créé manuellement sur chaque poste si des valeurs locales sont nécessaires pour l'environnement `dev`. Il est ignoré par Git.
 
 ### Ce qui relève de l'infrastructure
 
@@ -504,17 +513,15 @@ ls -la
 > Vérifier notamment la présence des fichiers suivants :
 >
 > `.env`  
-> `.env.dev`  
 > `compose.yaml`
 
 ### 2. Comprendre le rôle des fichiers
 
 Symfony charge les fichiers d'environnement dans un ordre précis, chaque fichier suivant pouvant surcharger le précédent :
 
-- `.env` : fichier de base commité, contenant les valeurs par défaut des variables d'environnement du projet.
-- `.env.local` : fichier non commité, contenant des surcharges locales propres à la machine. Il n'est pas fourni dans ce dépôt et doit être créé manuellement si nécessaire.
-- `.env.dev` : fichier commité, contenant les valeurs spécifiques à l'environnement `dev`. Il est pris en compte lorsque `APP_ENV=dev`.
-- `.env.dev.local` : fichier non commité, contenant des surcharges locales propres à l'environnement `dev`. Il n'est pas fourni dans ce dépôt et peut être créé manuellement pour des besoins locaux.
+- `.env` : fichier de base commité, contenant les valeurs par défaut des variables d'environnement du projet. Il ne doit jamais contenir de secrets réels.
+- `.env.local` : fichier non commité, contenant des surcharges locales propres à la machine. C'est dans ce fichier que doit être définie `APP_SECRET` avec une valeur réelle, unique par projet.
+- `.env.dev.local` : fichier non commité, contenant des surcharges locales propres à l'environnement `dev`. Il peut être créé manuellement sur chaque poste si des valeurs locales sont nécessaires pour cet environnement.
 
 > Les variables d'environnement réelles définies dans le système ont toujours priorité sur les fichiers `.env`.
 
@@ -749,4 +756,3 @@ Cette version s'appuie sur les commandes Compose officielles :
 
 - [Configuration](https://docs.phpdoc.org/guide/references/configuration.html)  
   Documentation officielle sur le fichier `phpdoc.dist.xml`, son emplacement recommandé à la racine du projet et son usage comme configuration versionnée.
-  
