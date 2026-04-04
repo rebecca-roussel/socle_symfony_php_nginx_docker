@@ -280,7 +280,7 @@ docker run --rm -v "$(pwd):/data" phpdoc/phpdoc:3
 > phpDocumentor reste l'outil qui génère la documentation.
 > L'image Docker officielle fournit simplement un environnement prêt à l'emploi qui contient déjà phpDocumentor et ses dépendances.
 
-La documentation générée est placée dans le dossier `docs/api/` à la racine du projet.
+La documentation générée est placée dans le dossier `docs/api/` à la racine du projet, conformément à la configuration définie dans `phpdoc.dist.xml`.
 
 ---
 
@@ -488,7 +488,7 @@ Décrit les services du projet, leur orchestration, leurs volumes, leurs ports e
 ### Documents de référence et sortie de documentation
 
 `docs/api/`  
-Contient la documentation technique générée par phpDocumentor à partir du code source et des DocBlocks. Ce dossier est produit lors de l'exécution de la commande de génération.
+Contient la documentation technique générée par phpDocumentor à partir du code source et des DocBlocks. Ce dossier est produit lors de l'exécution de la commande de génération, conformément au dossier de sortie configuré dans `phpdoc.dist.xml`.
 
 `phpdoc.dist.xml`  
 Contient la configuration de phpDocumentor. Ce fichier permet de définir comment la documentation technique du projet doit être générée et versionnée avec le socle.
@@ -520,8 +520,10 @@ ls -la
 Symfony charge les fichiers d'environnement dans un ordre précis, chaque fichier suivant pouvant surcharger le précédent :
 
 - `.env` : fichier de base commité, contenant les valeurs par défaut des variables d'environnement du projet. Il ne doit jamais contenir de secrets réels.
-- `.env.local` : fichier non commité, contenant des surcharges locales propres à la machine. C'est dans ce fichier que doit être définie `APP_SECRET` avec une valeur réelle, unique par projet.
-- `.env.dev.local` : fichier non commité, contenant des surcharges locales propres à l'environnement `dev`. Il peut être créé manuellement sur chaque poste si des valeurs locales sont nécessaires pour cet environnement.
+- `.env.local` : fichier non commité, contenant des surcharges locales propres à la machine.
+- `.env.dev.local` : fichier non commité, contenant des surcharges locales propres à l'environnement `dev`. Dans ce socle, c'est dans ce fichier qu'une valeur réelle de `APP_SECRET` peut être définie si elle est nécessaire en développement.
+- `.env.test` : fichier commité, utilisé pour les valeurs propres aux tests.
+- `.env.test.local` : fichier non commité, utilisé pour des surcharges locales de test si besoin.
 
 > Les variables d'environnement réelles définies dans le système ont toujours priorité sur les fichiers `.env`.
 
@@ -756,3 +758,4 @@ Cette version s'appuie sur les commandes Compose officielles :
 
 - [Configuration](https://docs.phpdoc.org/guide/references/configuration.html)  
   Documentation officielle sur le fichier `phpdoc.dist.xml`, son emplacement recommandé à la racine du projet et son usage comme configuration versionnée.
+  
