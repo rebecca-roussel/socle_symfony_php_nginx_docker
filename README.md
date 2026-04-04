@@ -1,4 +1,4 @@
-# stack_symfony_php_nginx_docker
+# socle_symfony_php_nginx_docker
 
 Socle de configuration reproductible pour démarrer des projets Symfony avec **PHP-FPM**, **Nginx** et **Docker**.
 
@@ -214,7 +214,7 @@ Le choix du SGBD doit rester cohérent avec l'ensemble de la stack technique. Il
 
 ```bash
 git clone <url_du_depot>
-cd stack_symfony_php_nginx_docker
+cd socle_symfony_php_nginx_docker
 composer install
 ```
 
@@ -267,8 +267,10 @@ Comme ce socle utilise déjà Docker, il est possible d'utiliser directement l'i
 docker run --rm -v "$(pwd):/data" phpdoc/phpdoc:3
 ```
 
-> phpDocumentor reste l’outil qui génère la documentation.
-> L’image Docker officielle fournit simplement un environnement prêt à l’emploi qui contient déjà phpDocumentor et ses dépendances.
+> phpDocumentor reste l'outil qui génère la documentation.
+> L'image Docker officielle fournit simplement un environnement prêt à l'emploi qui contient déjà phpDocumentor et ses dépendances.
+
+La documentation générée est placée dans le dossier `docs/api/` à la racine du projet.
 
 ---
 
@@ -371,6 +373,8 @@ La structure exacte peut varier selon les paquets installés, mais la structure 
 │   │   └── default.conf
 │   └── php
 │       └── Dockerfile
+├── docs
+│   └── api
 ├── .dockerignore
 ├── .editorconfig
 ├── .env
@@ -449,6 +453,9 @@ Fige les versions exactes des dépendances installées. Il garantit une installa
 `.env`  
 Contient les variables d'environnement de base utilisées par Symfony. Ce fichier sert de référence commune pour le fonctionnement général du projet.
 
+`.env.dev`  
+Contient les surcharges de variables d'environnement spécifiques à l'environnement de développement. Ce fichier est commité et complète `.env` pour l'environnement `dev`.
+
 ### Ce qui relève de l'infrastructure
 
 `docker/`  
@@ -469,15 +476,10 @@ Contient la configuration du serveur Nginx. Ce fichier précise notamment le ré
 `compose.yaml`  
 Décrit les services du projet, leur orchestration, leurs volumes, leurs ports et leurs relations. Ce fichier permet de démarrer l'environnement local complet avec une seule commande.
 
-`.env.docker`  
-Fichier spécifique à ce socle pour centraliser des variables destinées à l'environnement conteneurisé.  
-Ce fichier n'est pas chargé nativement par Symfony uniquement parce qu'il existe.  
-Il doit être relié explicitement à Docker Compose s'il est utilisé, par exemple via la directive `env_file` dans `compose.yaml`.
+### Documents de référence et sortie de documentation
 
-`.env.prod`  
-Permet de prévoir une configuration spécifique à un environnement de production. Il sert à isoler les paramètres destinés à un déploiement réel.
-
-### Document de référence
+`docs/api/`  
+Contient la documentation technique générée par phpDocumentor à partir du code source et des DocBlocks. Ce dossier est produit lors de l'exécution de la commande de génération.
 
 `phpdoc.dist.xml`  
 Contient la configuration de phpDocumentor. Ce fichier permet de définir comment la documentation technique du projet doit être générée et versionnée avec le socle.
@@ -501,37 +503,22 @@ ls -la
 
 > Vérifier notamment la présence des fichiers suivants :
 >
-> `.env`
-> `.env.docker`
-> `.env.prod`
+> `.env`  
+> `.env.dev`  
 > `compose.yaml`
 
 ### 2. Comprendre le rôle des fichiers
 
-- `.env` : fichier de base utilisé par Symfony pour définir les variables d'environnement du projet.
-- `.env.docker` : fichier spécifique au socle, destiné à centraliser des variables pour l'environnement conteneurisé.
-- `.env.prod` : fichier prévu pour un contexte de production.
+Symfony charge les fichiers d'environnement dans un ordre précis, chaque fichier suivant pouvant surcharger le précédent :
 
-> Symfony ne charge pas automatiquement un fichier arbitraire comme `.env.docker` uniquement parce qu'il existe.
-> Si ce fichier est réellement utilisé par le socle, sa prise en compte doit être vérifiée dans `compose.yaml`, par exemple via la directive `env_file`.
+- `.env` : fichier de base commité, contenant les valeurs par défaut des variables d'environnement du projet.
+- `.env.local` : fichier non commité, contenant des surcharges locales propres à la machine. Il n'est pas fourni dans ce dépôt et doit être créé manuellement si nécessaire.
+- `.env.dev` : fichier commité, contenant les valeurs spécifiques à l'environnement `dev`. Il est pris en compte lorsque `APP_ENV=dev`.
+- `.env.dev.local` : fichier non commité, contenant des surcharges locales propres à l'environnement `dev`. Il n'est pas fourni dans ce dépôt et peut être créé manuellement pour des besoins locaux.
 
-### 3. Vérifier comment Docker Compose charge les variables
+> Les variables d'environnement réelles définies dans le système ont toujours priorité sur les fichiers `.env`.
 
-Ouvrir `compose.yaml` et repérer si le fichier `.env.docker` est référencé.
-
-Exemple possible :
-
-```yaml
-services:
-  php:
-    env_file:
-      - .env.docker
-```
-
-> Si `env_file` est présent, les variables définies dans `.env.docker` seront injectées dans l'environnement du conteneur concerné.
-> Si ce n'est pas le cas, `.env.docker` existe comme fichier du socle mais n'est pas encore utilisé par Docker Compose.
-
-### 4. Adapter les variables au projet cible
+### 3. Adapter les variables au projet cible
 
 Avant de lancer un nouveau projet à partir de ce socle, il faut relire et adapter les variables utiles, par exemple :
 
@@ -755,10 +742,11 @@ Cette version s'appuie sur les commandes Compose officielles :
 - [Compose Build Specification](https://docs.docker.com/reference/compose-file/build/)  
   Documentation officielle sur la section `build` dans un fichier Compose et le rôle du `Dockerfile`.
 
-  ### phpDocumentor
+### phpDocumentor
 
 - [Installation](https://docs.phpdoc.org/guide/getting-started/installing.html)  
-  Documentation officielle sur les méthodes d’installation de phpDocumentor, notamment l’image Docker officielle et l’installation via Composer.
+  Documentation officielle sur les méthodes d'installation de phpDocumentor, notamment l'image Docker officielle et l'installation via Composer.
 
 - [Configuration](https://docs.phpdoc.org/guide/references/configuration.html)  
   Documentation officielle sur le fichier `phpdoc.dist.xml`, son emplacement recommandé à la racine du projet et son usage comme configuration versionnée.
+  
